@@ -1,0 +1,44 @@
+@model DruPortalMvc.Models.HizmetViewModel
+@{
+    ViewData["Title"] = "Hizmet Düzenle";
+}
+<section class="main-slider-two">
+    <div class="main-slider__carousel owl owl-theme thm-owl__carousel"
+        data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title">@Model.Name</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="hizmet-details">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        <form asp-action="Edit" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Başlık</label>
+                                <input asp-for="Title" class="form-control" />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Content" class="form-label">İçerik</label>
+                                <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> 

@@ -1,0 +1,436 @@
+@model List<HizmetViewModel>
+@{
+    ViewData["Title"] = "Hizmetler";
+}
+@functions{
+    public static string HtmlToPlainText(string html)
+    {
+        if (string.IsNullOrEmpty(html)) return "";
+        return System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+    }
+}
+<!--Page Header Start-->
+<section class="main-slider-two">
+    <div class="main-slider__carousel owl owl-theme thm-owl__carousel"
+        data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title">Hizmetler</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Page Header End-->
+
+<!-- Hizmetler Preview Start -->
+<section class="services-five services-five--page">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-end">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="hizmetDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Hizmetler
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="hizmetDropdown" id="hizmetDropdownMenu">
+                        @if (Model.Count == 0)
+                        {
+                            <li><span class="dropdown-item text-muted">Kayıtlı hizmet yok</span></li>
+                        }
+                        else
+                        {
+                            foreach (var hizmet in Model)
+                            {
+                                <li><a class="dropdown-item" href="@Url.Action("Details", "Hizmet", new { id = hizmet.Id })">@hizmet.Name</a></li>
+                            }
+                        }
+                    </ul>
+                </div>
+                <a href="#" class="btn btn-success ms-2" onclick="showAddHizmetModal();return false;">Hizmet Ekle</a>
+            </div>
+        </div>
+        <div class="row gutter-y-30">
+            @foreach (var hizmet in Model)
+            {
+                <div class="col-xl-3 col-md-6 wow fadeInUp" data-wow-delay="00ms">
+                    <div class="services-five__single">
+                        <div class="services-five__single__content">
+                            <div class="services-five__single__icon" style="cursor:pointer;" onclick="showIconPickerModal('@hizmet.Id')">
+                                <span class="@(string.IsNullOrEmpty(hizmet.Icon) ? "delogis-icons-two-heart" : hizmet.Icon)"></span>
+                            </div>
+                            <h3 class="services-five__single__title">
+                                <a href="@Url.Action("Details", "Hizmet", new { id = hizmet.Id })">@hizmet.Name</a>
+                            </h3>
+                            <div class="services-five__single__text" style="min-height:70px;max-height:80px;overflow:hidden;text-overflow:ellipsis;white-space:pre-line;word-break:break-word;display:flex;align-items:center;justify-content:center;background:#f3f1ef;border-radius:8px;padding:8px;text-align:center;">
+                                @if (!string.IsNullOrWhiteSpace(hizmet.PreviewText))
+                                {
+                                    @Html.Raw(HtmlToPlainText(hizmet.PreviewText))
+                                }
+                                else
+                                {
+                                    <button type="button" style="border:none;background:none;cursor:pointer;font-size:2rem;color:#d1c7be;" onclick="showPreviewTextModal('@hizmet.Id')">
+                                        +
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div class="services-five__single__img" style="position:relative;">
+                            <img src="@(string.IsNullOrEmpty(hizmet.PreviewImageUrl) ? "/assets/images/services/services-5-1.jpg" : hizmet.PreviewImageUrl)" alt="@hizmet.Name" />
+                            <!-- Preview Image Upload Button (Blog mantığıyla) -->
+                            <button type="button" class="btn btn-light btn-sm" style="position:absolute;top:10px;left:10px;z-index:2;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);" title="Önizleme Görseli Yükle" onclick="showFileInput('@hizmet.Id')">
+                                <span style="font-size:1.2rem;color:#bdb5ad;">+</span>
+                            </button>
+                            <input type="file" id="fileInput_@hizmet.Id" style="display:none;" accept="image/*" onchange="uploadPreviewImage('@hizmet.Id')" />
+                            <!-- Eğer görsel varsa sil butonu -->
+                            @if (!string.IsNullOrEmpty(hizmet.PreviewImageUrl))
+                            {
+                                <button type="button" class="btn btn-danger btn-sm" style="position:absolute;top:10px;left:50px;z-index:2;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);" title="Önizleme Görselini Sil" onclick="deletePreviewImage('@hizmet.Id')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            }
+                            <a href="@Url.Action("Details", "Hizmet", new { id = hizmet.Id })" class="services-five__single__btn">
+                                <span class="services-five__single__btn__front"><span class="delogis-icons-two-right-arrow"></span></span>
+                                <span class="services-five__single__btn__back"><span class="delogis-icons-two-right-arrow"></span>Detay</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- Hizmetler Preview End -->
+
+<!-- Hizmet Ekle Modal (sadece name ile) -->
+<div class="modal fade" id="addHizmetModal" tabindex="-1" aria-labelledby="addHizmetModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addHizmetModalLabel">Yeni Hizmet Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addHizmetForm">
+                    <div class="mb-3">
+                        <label for="hizmetName" class="form-label">Hizmet Adı</label>
+                        <input type="text" class="form-control" id="hizmetName" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-success" onclick="addHizmet()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cropper Modal ve JS -->
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<div class="modal" tabindex="-1" id="cropperModal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Önizleme Görselini Kırp</h5>
+        <button type="button" class="btn-close" onclick="closeCropperModal()"></button>
+      </div>
+      <div class="modal-body">
+        <img id="cropperImage" style="max-width:100%;" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="cropAndUpload()">Kaydet</button>
+        <button type="button" class="btn btn-secondary" onclick="closeCropperModal()">İptal</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="deletePreviewModal" tabindex="-1" aria-labelledby="deletePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deletePreviewModalLabel">Önizleme Görselini Kaldır</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        Bu hizmetin önizleme görselini kaldırmak istediğinize emin misiniz?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" class="btn btn-danger" id="confirmDeletePreviewBtn">Evet, Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11000">
+  <div id="hizmetToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="hizmetToastBody">
+        Bildirim
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Kapat"></button>
+    </div>
+  </div>
+</div>
+
+<!-- PreviewText Modal -->
+<div class="modal fade" id="previewTextModal" tabindex="-1" aria-labelledby="previewTextModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewTextModalLabel">Önizleme Metni Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="previewTextHizmetId" />
+        <textarea class="form-control" id="previewTextInput" rows="3" maxlength="120" placeholder="Önizleme metni giriniz..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-success" onclick="savePreviewText()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Icon Picker Modal -->
+<div class="modal fade" id="iconPickerModal" tabindex="-1" aria-labelledby="iconPickerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="iconPickerModalLabel">İkon Seç</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="iconPickerHizmetId" />
+        <div class="row" id="iconGrid" style="max-height:300px;overflow-y:auto;gap:10px;">
+          <!-- Iconlar JS ile doldurulacak -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+function showAddHizmetModal() {
+    var modal = new bootstrap.Modal(document.getElementById('addHizmetModal'));
+    modal.show();
+}
+let cropper;
+let currentHizmetId;
+let deletePreviewHizmetId = null;
+function showFileInput(hizmetId) {
+    currentHizmetId = hizmetId;
+    document.getElementById('fileInput_' + hizmetId).click();
+}
+function uploadPreviewImage(hizmetId) {
+    var input = document.getElementById('fileInput_' + hizmetId);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('cropperImage').src = e.target.result;
+            document.getElementById('cropperModal').style.display = 'block';
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(document.getElementById('cropperImage'), {
+                aspectRatio: 16 / 9,
+                viewMode: 1,
+                dragMode: 'move',
+                cropBoxMovable: false,
+                cropBoxResizable: false,
+                zoomable: false,
+                scalable: false,
+                rotatable: false,
+                autoCropArea: 1,
+                background: false,
+                guides: false,
+                highlight: false,
+                center: false,
+                minCropBoxWidth: 0,
+                minCropBoxHeight: 0
+            });
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function cropAndUpload() {
+    if (!cropper) return;
+    cropper.getCroppedCanvas().toBlob(function (blob) {
+        var formData = new FormData();
+        formData.append('id', currentHizmetId);
+        formData.append('file', blob, 'cropped.png');
+        fetch('/Hizmet/UploadPreviewImage', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                showHizmetToast('Görsel başarıyla güncellendi.', true);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showHizmetToast('Görsel yüklenemedi!', false);
+            }
+            closeCropperModal();
+        })
+        .catch(() => alert('Bir hata oluştu!'));
+    }, 'image/png');
+}
+function closeCropperModal() {
+    document.getElementById('cropperModal').style.display = 'none';
+    if (cropper) cropper.destroy();
+}
+function deletePreviewImage(hizmetId) {
+    deletePreviewHizmetId = hizmetId;
+    var modal = new bootstrap.Modal(document.getElementById('deletePreviewModal'));
+    modal.show();
+}
+document.getElementById('confirmDeletePreviewBtn').onclick = function() {
+    if (!deletePreviewHizmetId) return;
+    fetch('/Hizmet/DeletePreviewImage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: deletePreviewHizmetId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showHizmetToast('Görsel başarıyla kaldırıldı.', true);
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showHizmetToast('Görsel silinemedi!', false);
+        }
+    })
+    .catch(() => showHizmetToast('Bir hata oluştu!', false));
+    var modal = bootstrap.Modal.getInstance(document.getElementById('deletePreviewModal'));
+    modal.hide();
+    deletePreviewHizmetId = null;
+};
+function showHizmetToast(message, isSuccess) {
+    var toastEl = document.getElementById('hizmetToast');
+    var toastBody = document.getElementById('hizmetToastBody');
+    toastBody.textContent = message;
+    toastEl.classList.remove('text-bg-primary', 'text-bg-danger', 'text-bg-success');
+    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
+    var toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+function addHizmet() {
+    const name = document.getElementById('hizmetName').value.trim();
+    if (!name) {
+        alert('Hizmet adı gereklidir!');
+        return;
+    }
+    fetch('/Hizmet/AddNameOnly', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Hizmet eklenemedi!');
+        }
+    });
+}
+function showPreviewTextModal(hizmetId) {
+    document.getElementById('previewTextHizmetId').value = hizmetId;
+    document.getElementById('previewTextInput').value = '';
+    var modal = new bootstrap.Modal(document.getElementById('previewTextModal'));
+    modal.show();
+}
+function savePreviewText() {
+    var hizmetId = document.getElementById('previewTextHizmetId').value;
+    var previewText = document.getElementById('previewTextInput').value.trim();
+    if (!previewText) {
+        alert('Önizleme metni boş olamaz!');
+        return;
+    }
+    if (previewText.length > 120) {
+        alert('En fazla 120 karakter girebilirsiniz!');
+        return;
+    }
+    fetch('/Hizmet/AddPreviewText', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: hizmetId, previewText: previewText })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Önizleme metni eklenemedi!');
+        }
+    });
+}
+const ICON_CLASSES = [
+  'delogis-icons-two-brain',
+  'delogis-icons-two-call',
+  'delogis-icons-two-case-study',
+  'delogis-icons-two-check',
+  'delogis-icons-two-chroven-left',
+  'delogis-icons-two-chroven-right',
+  'delogis-icons-two-comment',
+  'delogis-icons-two-costumer',
+  'delogis-icons-two-expertise',
+  'delogis-icons-two-family',
+  'delogis-icons-two-heart',
+  'delogis-icons-two-high-five',
+  'delogis-icons-two-kids',
+  'delogis-icons-two-left-arrow',
+  'delogis-icons-two-right-arrow',
+  'delogis-icons-two-up-arrow',
+  'delogis-icons-two-down-arrow',
+  'delogis-icons-two-mind',
+  'delogis-icons-two-online-business',
+  'delogis-icons-two-phone-call',
+  'delogis-icons-two-ping',
+  'delogis-icons-two-play',
+  'delogis-icons-two-plus',
+  'delogis-icons-two-psychologist',
+  'delogis-icons-two-quote',
+  'delogis-icons-two-self-confidence',
+  'delogis-icons-two-stress-relief',
+  'delogis-icons-two-suitcase',
+  'delogis-icons-two-telephone-call',
+  'delogis-icons-two-therapy'
+];
+function showIconPickerModal(hizmetId) {
+  document.getElementById('iconPickerHizmetId').value = hizmetId;
+  const iconGrid = document.getElementById('iconGrid');
+  iconGrid.innerHTML = '';
+  ICON_CLASSES.forEach(cls => {
+    const col = document.createElement('div');
+    col.className = 'col-2 d-flex justify-content-center mb-2';
+    col.innerHTML = `<span class="${cls}" style="font-size:2rem;cursor:pointer;" onclick="selectIcon('${cls}')"></span>`;
+    iconGrid.appendChild(col);
+  });
+  var modal = new bootstrap.Modal(document.getElementById('iconPickerModal'));
+  modal.show();
+}
+function selectIcon(iconClass) {
+  const hizmetId = document.getElementById('iconPickerHizmetId').value;
+  fetch('/Hizmet/AddIcon', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: hizmetId, icon: iconClass })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('İkon kaydedilemedi!');
+    }
+  });
+}
+</script>
+} 

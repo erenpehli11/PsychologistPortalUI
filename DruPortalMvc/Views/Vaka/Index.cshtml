@@ -1,0 +1,766 @@
+@model List<DruPortalMvc.Models.VakaViewModel>
+@{
+    ViewData["Title"] = "Vakalar";
+    var apiBaseUrl = "https://localhost:5014"; // API projesinin base URL'si
+}
+
+<!--Page Header Start-->
+<section class="main-slider-two">
+    <div class="main-slider-two__carousel owl owl-theme thm-owl__carousel"
+        data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title">Vakalar</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Page Header End-->
+
+<!--Vaka One Start-->
+<section class="blog-one">
+    <div class="container">
+        <!-- Category Dropdown -->
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-end">
+                <div class="category-dropdown-container">
+                    <div class="category-dropdown" id="categoryDropdown">
+                        <div class="category-dropdown-header" onclick="toggleCategoryDropdown()">
+                            <span id="selectedCategoryText">Tüm Kategoriler</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="category-dropdown-content" id="categoryDropdownContent">
+                            <div class="category-item" data-category-id="all" onclick="filterByCategory('all', 'Tüm Kategoriler')">
+                                <span>Tüm Kategoriler</span>
+                            </div>
+                            <div class="category-list" id="categoryList">
+                                <!-- Categories will be loaded here -->
+                            </div>
+                            <div class="category-add-button" onclick="showAddCategoryModal()">
+                                <i class="fas fa-plus"></i>
+                                <span>Yeni Kategori</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="blogContainer">
+            @foreach (var vaka in Model)
+            {
+                var day = vaka.CreatedAt.Day.ToString("00");
+                var month = vaka.CreatedAt.ToString("MMM");
+                <div class="col-xl-4 col-lg-4 col-md-6 wow fadeInUp blog-item" data-category-id="@(vaka.VakaCategoryId.ToString() ?? "uncategorized")" data-wow-delay="100ms">
+                    <div class="blog-one__single">
+                        <div class="blog-one__img-box">
+                            @if (!string.IsNullOrEmpty(vaka.PreviewImageUrl))
+                            {
+                                <div class="blog-one__img" style="position:relative; background: #f8f6f4; border-radius:8px;">
+                                    <div class="blog-one__date">@day @month</div>
+                                    <img src="@vaka.PreviewImageUrl"
+                                         id="previewImg_@vaka.Id"
+                                         style="width:100%; height:auto; max-height:200px; border-radius:8px;" alt="" />
+                                    <button type="button" class="blog-preview-action"
+                                            title="Önizleme Görselini Değiştir"
+                                            onclick="showFileInput('@vaka.Id')">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                          <path d="M12.146.854a.5.5 0 0 1 .708 0l2.292 2.292a.5.5 0 0 1 0 .708l-9.439 9.439a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l9.439-9.439zm.708-.708a1.5 1.5 0 0 0-2.121 0l-9.439 9.439a1.5 1.5 0 0 0-.329.497l-1.5 4a1.5 1.5 0 0 0 1.95 1.95l4-1.5a1.5 1.5 0 0 0 .497-.329l9.439-9.439a1.5 1.5 0 0 0 0-2.121l-2.292-2.292z"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="blog-preview-action blog-preview-delete"
+                                            title="Önizleme Görselini Kaldır"
+                                            onclick="deletePreviewImage('@vaka.Id')">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5v-7zM4.118 4 4 4.059V4.5A.5.5 0 0 0 4.5 5h7a.5.5 0 0 0 .5-.5v-.441l-.118-.059A1.5 1.5 0 0 0 12.5 3h-9a1.5 1.5 0 0 0-.382.059zM2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v.5A1.5 1.5 0 0 1 12.5 6h-9A1.5 1.5 0 0 1 2 4.5V4z"/>
+                                        </svg>
+                                    </button>
+                                    <input type="file" id="fileInput_@vaka.Id" style="display:none;" accept="image/*" onchange="uploadPreviewImage('@vaka.Id')" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="position:relative;">
+                                    <div class="blog-one__date">@day @month</div>
+                                    <button type="button" class="blog-preview-action"
+                                            title="Önizleme Görseli Ekle"
+                                            onclick="showFileInput('@vaka.Id')">+</button>
+                                    <input type="file" id="fileInput_@vaka.Id" style="display:none;" accept="image/*" onchange="uploadPreviewImage('@vaka.Id')" />
+                                </div>
+                            }
+                        </div>
+                        <div class="blog-one__content-top">
+                            <h3 class="blog-one__content-title">
+                                <a href="@Url.Action("Details", "Vaka", new { id = vaka.Id })">
+                                    @vaka.Title
+                                </a>
+                            </h3>
+                            <p>@vaka.ShortDescription</p>
+                        </div>
+                    </div>
+                    <div class="blog-one__content">
+                        <div class="blog-one__comment-and-btn">
+                            <div class="blog-one__btn">
+                                <a href="@Url.Action("Delete", "Vaka", new { id = vaka.Id })" class="btn btn-danger btn-sm">Sil</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <a href="@Url.Action("Create", "Vaka")" class="btn btn-success">Yeni Vaka Ekle</a>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Vaka One End-->
+
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<!-- Cropper Modal -->
+<div class="modal" tabindex="-1" id="cropperModal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Önizleme Görselini Kırp</h5>
+        <button type="button" class="btn-close" onclick="closeCropperModal()"></button>
+      </div>
+      <div class="modal-body">
+        <img id="cropperImage" style="max-width:100%;" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="cropAndUpload()">Kaydet</button>
+        <button type="button" class="btn btn-secondary" onclick="closeCropperModal()">İptal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Silme Onay Modali -->
+<div class="modal fade" id="deletePreviewModal" tabindex="-1" aria-labelledby="deletePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deletePreviewModalLabel">Önizleme Görselini Kaldır</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        Bu vakanın önizleme görselini kaldırmak istediğinize emin misiniz?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" class="btn btn-danger" id="confirmDeletePreviewBtn">Evet, Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Bildirimi -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11000">
+  <div id="vakaToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="vakaToastBody">
+        Bildirim
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Kapat"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Management Modals -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Yeni Kategori Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCategoryForm">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Kategori Adı</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-success" onclick="addCategory()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryModalLabel">Kategori Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCategoryForm">
+                    <input type="hidden" id="editCategoryId">
+                    <div class="mb-3">
+                        <label for="editCategoryName" class="form-label">Kategori Adı</label>
+                        <input type="text" class="form-control" id="editCategoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCategoryDescription" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="editCategoryDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-warning" onclick="updateCategory()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCategoryModalLabel">Kategori Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <p>Kategori silindiğinde içerisinde bulunan vakalar da silinecektir. Onaylıyor musunuz?</p>
+                <p><strong>Kategori:</strong> <span id="deleteCategoryName"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-danger" onclick="deleteCategory()">Sil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#cropperModal .modal-dialog {
+    max-width: 700px;
+}
+#cropperModal .modal-content {
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+#cropperModal .modal-body {
+    flex: 1 1 auto;
+    overflow: auto;
+    max-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#cropperImage {
+    max-width: 100%;
+    max-height: 55vh;
+    display: block;
+    margin: 0 auto;
+}
+.blog-one__date {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: rgba(141, 103, 72, 0.95);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    min-width: 55px;
+    text-align: center;
+}
+.blog-preview-action {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 9999;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    cursor: pointer;
+}
+.blog-one__img {
+    min-height: 140px;
+    background: #f8f6f4;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    border-radius: 8px;
+    position: relative;
+}
+.blog-preview-delete {
+    left: 60px;
+    background: #ffeaea;
+    color: #c00;
+}
+.blog-preview-delete:hover {
+    background: #ffcccc;
+}
+
+/* Category Dropdown Styles */
+.category-dropdown-container {
+    position: relative;
+    z-index: 1000;
+}
+
+.category-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.category-dropdown-header {
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 200px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.category-dropdown-header:hover {
+    border-color: #8d6748;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.category-dropdown-header i {
+    transition: transform 0.3s ease;
+}
+
+.category-dropdown.active .category-dropdown-header i {
+    transform: rotate(180deg);
+}
+
+.category-dropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1001;
+}
+
+.category-dropdown.active .category-dropdown-content {
+    display: block;
+}
+
+.category-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.category-item:hover {
+    background-color: #f8f9fa;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-item .category-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.category-item:hover .category-actions {
+    opacity: 1;
+}
+
+.category-action-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.category-edit-btn {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.category-edit-btn:hover {
+    background: #ffeaa7;
+}
+
+.category-delete-btn {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.category-delete-btn:hover {
+    background: #f5c6cb;
+}
+
+.category-add-button {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #d4edda;
+    color: #155724;
+    border-top: 1px solid #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.category-add-button:hover {
+    background: #c3e6cb;
+}
+
+.blog-item.hidden {
+    display: none;
+}
+</style>
+
+@section Scripts {
+<script>
+let cropper;
+let currentVakaId;
+let deletePreviewVakaId = null;
+let categories = [];
+let currentCategoryFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+});
+
+function loadCategories() {
+    fetch('/VakaCategory/GetCategories')
+        .then(response => response.json())
+        .then(data => {
+            categories = data;
+            renderCategories();
+        })
+        .catch(error => console.error('Error loading categories:', error));
+}
+
+function renderCategories() {
+    const categoryList = document.getElementById('categoryList');
+    categoryList.innerHTML = '';
+    
+    categories.forEach(category => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+        categoryItem.setAttribute('data-category-id', category.id);
+        categoryItem.onclick = (e) => {
+            if (!e.target.closest('.category-actions')) {
+                filterByCategory(category.id, category.name);
+            }
+        };
+        
+        categoryItem.innerHTML = `
+            <span>${category.name}</span>
+            <div class="category-actions">
+                <button class="category-action-btn category-edit-btn" onclick="editCategory('${category.id}', '${category.name}', '${category.description || ''}')" title="Düzenle">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="category-action-btn category-delete-btn" onclick="showDeleteCategoryModal('${category.id}', '${category.name}')" title="Sil">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        categoryList.appendChild(categoryItem);
+    });
+}
+
+function toggleCategoryDropdown() {
+    const dropdown = document.getElementById('categoryDropdown');
+    dropdown.classList.toggle('active');
+}
+
+function filterByCategory(categoryId, categoryName) {
+    currentCategoryFilter = categoryId;
+    document.getElementById('selectedCategoryText').textContent = categoryName;
+    
+    const blogItems = document.querySelectorAll('.blog-item');
+    blogItems.forEach(item => {
+        const itemCategoryId = item.getAttribute('data-category-id');
+        if (categoryId === 'all' || itemCategoryId === categoryId) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+    
+    toggleCategoryDropdown();
+}
+
+function showAddCategoryModal() {
+    document.getElementById('categoryName').value = '';
+    document.getElementById('categoryDescription').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+    modal.show();
+    toggleCategoryDropdown();
+}
+
+function addCategory() {
+    const name = document.getElementById('categoryName').value.trim();
+    const description = document.getElementById('categoryDescription').value.trim();
+    
+    if (!name) {
+        alert('Kategori adı gereklidir!');
+        return;
+    }
+    
+    fetch('/VakaCategory/AddCategoryAjax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, description })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCategories();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+            modal.hide();
+            showVakaToast('Kategori başarıyla eklendi.', true);
+        } else {
+            showVakaToast('Kategori eklenemedi!', false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showVakaToast('Bir hata oluştu!', false);
+    });
+}
+
+function editCategory(id, name, description) {
+    document.getElementById('editCategoryId').value = id;
+    document.getElementById('editCategoryName').value = name;
+    document.getElementById('editCategoryDescription').value = description;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+    modal.show();
+}
+
+function updateCategory() {
+    const id = document.getElementById('editCategoryId').value;
+    const name = document.getElementById('editCategoryName').value.trim();
+    const description = document.getElementById('editCategoryDescription').value.trim();
+    
+    if (!name) {
+        alert('Kategori adı gereklidir!');
+        return;
+    }
+    
+    fetch('/VakaCategory/UpdateCategoryAjax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, name, description })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCategories();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editCategoryModal'));
+            modal.hide();
+            showVakaToast('Kategori başarıyla güncellendi.', true);
+        } else {
+            showVakaToast('Kategori güncellenemedi!', false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showVakaToast('Bir hata oluştu!', false);
+    });
+}
+
+function showDeleteCategoryModal(id, name) {
+    document.getElementById('deleteCategoryName').textContent = name;
+    document.getElementById('deleteCategoryModal').setAttribute('data-category-id', id);
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
+    modal.show();
+}
+
+function deleteCategory() {
+    const id = document.getElementById('deleteCategoryModal').getAttribute('data-category-id');
+    
+    fetch('/VakaCategory/DeleteCategoryAjax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadCategories();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteCategoryModal'));
+            modal.hide();
+            showVakaToast('Kategori başarıyla silindi.', true);
+        } else {
+            showVakaToast('Kategori silinemedi!', false);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showVakaToast('Bir hata oluştu!', false);
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('categoryDropdown');
+    if (!dropdown.contains(event.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
+function showFileInput(vakaId) {
+    currentVakaId = vakaId;
+    document.getElementById('fileInput_' + vakaId).click();
+}
+
+function uploadPreviewImage(vakaId) {
+    var input = document.getElementById('fileInput_' + vakaId);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('cropperImage').src = e.target.result;
+            document.getElementById('cropperModal').style.display = 'block';
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(document.getElementById('cropperImage'), {
+                aspectRatio: 16 / 9, // Vaka kartının oranı neyse onu yaz
+                viewMode: 1,
+                dragMode: 'move', // Sadece görseli sürükleyebilsin
+                cropBoxMovable: false, // Crop kutusu sabit
+                cropBoxResizable: false, // Crop kutusu boyutlandırılamaz
+                zoomable: false, // Zoom yok
+                scalable: false,
+                rotatable: false,
+                autoCropArea: 1, // Crop kutusu alanı otomatik dolu başlasın
+                background: false,
+                guides: false,
+                highlight: false,
+                center: false,
+                minCropBoxWidth: 0,
+                minCropBoxHeight: 0
+            });
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function cropAndUpload() {
+    if (!cropper) return;
+    cropper.getCroppedCanvas().toBlob(function (blob) {
+        var formData = new FormData();
+        formData.append('id', currentVakaId);
+        formData.append('file', blob, 'cropped.png');
+        fetch('/Vaka/UploadPreviewImage', {
+            method: 'POST',
+            body: formData
+        })
+                .then(response => {
+                    if (response.ok) {
+                        // Görsel başarıyla yüklendi → img tag'ını güncelle (önceki src korunacaksa reload gerekebilir)
+                        showVakaToast('Görsel başarıyla güncellendi.', true);
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        // API 400/500 vs. dönmüş
+                        showVakaToast('Görsel yüklenemedi!', false);
+                    }
+            closeCropperModal();
+        })
+        .catch(() => alert('Bir hata oluştu!'));
+    }, 'image/png');
+}
+
+function closeCropperModal() {
+    document.getElementById('cropperModal').style.display = 'none';
+    if (cropper) cropper.destroy();
+}
+
+function deletePreviewImage(vakaId) {
+    deletePreviewVakaId = vakaId;
+    var modal = new bootstrap.Modal(document.getElementById('deletePreviewModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDeletePreviewBtn').onclick = function() {
+    if (!deletePreviewVakaId) return;
+    fetch('/Vaka/DeletePreviewImage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: deletePreviewVakaId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showVakaToast('Görsel başarıyla kaldırıldı.', true);
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showVakaToast('Görsel silinemedi!', false);
+        }
+    })
+    .catch(() => showVakaToast('Bir hata oluştu!', false));
+    var modal = bootstrap.Modal.getInstance(document.getElementById('deletePreviewModal'));
+    modal.hide();
+    deletePreviewVakaId = null;
+};
+
+function showVakaToast(message, isSuccess) {
+    var toastEl = document.getElementById('vakaToast');
+    var toastBody = document.getElementById('vakaToastBody');
+    toastBody.textContent = message;
+    toastEl.classList.remove('text-bg-primary', 'text-bg-danger', 'text-bg-success');
+    toastEl.classList.add(isSuccess ? 'text-bg-success' : 'text-bg-danger');
+    var toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+</script>
+} 

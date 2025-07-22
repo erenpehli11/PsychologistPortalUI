@@ -1,0 +1,85 @@
+@model DruPortalMvc.Models.VakaViewModel
+@{
+    ViewData["Title"] = "Vaka Düzenle";
+}
+<!--Page Header Start-->
+<section class="main-slider-two">
+    <div class="main-slider__carousel owl owl-theme thm-owl__carousel"
+        data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title">@Model.Title</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Page Header End-->
+
+<!--Vaka Details Start-->
+<section class="blog-details">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-7">
+                <div class="blog-details__left">
+                    <div class="blog-details__img">
+                        <img src="@Model.PreviewImageUrl" alt="">
+                        <div class="blog-details__date">
+                            <p>@Model.CreatedAt.ToString("dd<br>MMM")</p>
+                        </div>
+                    </div>
+                    <div class="blog-details__content">
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            <input type="hidden" asp-for="Id" />
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Başlık</label>
+                                <input asp-for="Title" class="form-control" />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="ShortDescription" class="form-label">Kısa Açıklama</label>
+                                <input asp-for="ShortDescription" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Content" class="form-label">İçerik</label>
+                                <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="PreviewImageFile" class="form-label">Önizleme Görseli</label>
+                                <input asp-for="PreviewImageFile" type="file" class="form-control" />
+                                @if (!string.IsNullOrEmpty(Model.PreviewImageUrl))
+                                {
+                                    <img src="@Model.PreviewImageUrl" alt="Önizleme" class="img-thumbnail mt-2" style="max-width:200px;" />
+                                }
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="VakaCategoryId" class="form-label">Kategori</label>
+                                <select asp-for="VakaCategoryId" asp-items="Model.Categories" class="form-control"></select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Vaka Details End-->
+<script src="https://cdn.tiny.cloud/1/dpe4cgc92up9sidx5u0f8eklwosou0elsw3ft7q33wajhcou/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+  tinymce.init({
+    selector: '#WordContent',
+    height: 500,
+    menubar: true,
+    plugins: [
+      'advlist autolink lists link image charmap print preview anchor',
+      'searchreplace visualblocks code fullscreen',
+      'insertdatetime media table paste code help wordcount'
+    ],
+    toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+  });
+</script> 

@@ -1,0 +1,102 @@
+﻿@model DruPortalMvc.Models.AboutViewModel
+@{
+    ViewData["Title"] = "Hakkımda";
+    var isEmpty = string.IsNullOrWhiteSpace(Model?.Content);
+    var isNew = Model?.Id == Guid.Empty || Model?.Id == null;
+}
+
+<section class="container mt-5">
+    <h2 class="mb-4">Hakkımda</h2>
+
+    @if (!isEmpty)
+    {
+        <div id="aboutContentDisplay">
+            <p>@Html.Raw(Model.Content)</p>
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-primary" id="editBtn">Düzenle</button>
+
+            <form asp-action="Delete" method="post" style="display:inline;">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Sil</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">Henüz içerik eklenmemiş.</div>
+        <button class="btn btn-primary" id="editBtn">İçerik Ekle</button>
+    }
+
+    <!-- Form sadece JS tarafından işlenecek -->
+    <form id="aboutForm" style="display:none;">
+        <input type="hidden" id="aboutId" value="@Model.Id" />
+        <textarea id="contentInput">@Model.Content</textarea>
+        <button type="submit" class="btn btn-success mt-3">Kaydet</button>
+        <button type="button" class="btn btn-secondary mt-3" id="cancelBtn">İptal</button>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/dpe4cgc92up9sidx5u0f8eklwosou0elsw3ft7q33wajhcou/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        const editBtn = document.getElementById('editBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const form = document.getElementById('aboutForm');
+        const display = document.getElementById('aboutContentDisplay');
+        const contentInput = document.getElementById('contentInput');
+        const aboutId = document.getElementById('aboutId');
+
+        editBtn?.addEventListener('click', () => {
+            form.style.display = 'block';
+            if (display) display.style.display = 'none';
+            editBtn.style.display = 'none';
+
+            tinymce.init({
+                selector: '#contentInput',
+                height: 400,
+                menubar: false,
+                plugins: 'link image code lists',
+                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | link image | code',
+                branding: false,
+                language: 'tr'
+            });
+        });
+
+        cancelBtn?.addEventListener('click', () => {
+            form.style.display = 'none';
+            if (display) display.style.display = 'block';
+            editBtn.style.display = 'inline-block';
+            if (tinymce.get('contentInput')) {
+                tinymce.get('contentInput').remove();
+            }
+        });
+
+        form?.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Sayfa yenilenmesini engelle
+
+            tinymce.triggerSave(); // TinyMCE içeriğini textarea’ya aktar
+
+            const content = contentInput.value;
+            const id = aboutId.value;
+            const isNew = !id || id === '00000000-0000-0000-0000-000000000000';
+            const action = isNew ? "Add" : "Edit";
+
+            const response = await fetch(`/About/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id, content })
+            });
+
+            if (response.ok) {
+                location.reload(); // Başarılıysa sayfayı yenile
+            } else {
+                const error = await response.text();
+                alert("Hata: " + error);
+            }
+        });
+    </script>
+}

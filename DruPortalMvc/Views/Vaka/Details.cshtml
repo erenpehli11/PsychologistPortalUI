@@ -1,0 +1,153 @@
+@model DruPortalMvc.Models.VakaViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+<!--Page Header Start-->
+<section class="main-slider-two">
+    <div class="main-slider__carousel owl owl-theme thm-owl__carousel"
+        data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title" id="vakaTitleDisplay">@Model.Title</h2>
+                    <input type="text" id="vakaTitleInput" class="form-control" style="display:none; font-size:2rem; font-weight:bold;" value="@Model.Title" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Page Header End-->
+
+<!--Vaka Details Start-->
+<section class="blog-details">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-7">
+                <div class="blog-details__left">
+                    <div class="blog-details__img">
+                        <img src="@Model.PreviewImageUrl" alt="">
+                        <div class="blog-details__date">
+                            <p>@Model.CreatedAt.ToString("dd<br>MMM")</p>
+                        </div>
+                    </div>
+                    <div class="blog-details__content">
+                        <ul class="blog-details__meta list-unstyled">
+                            <li>
+                                <i class="fas fa-user-circle"></i> Admin
+                            </li>
+                        </ul>
+                        <h3 class="blog-details__title" id="vakaTitleH3">@Model.Title</h3>
+                        <input type="text" id="vakaTitleEdit" class="form-control mb-2" style="display:none; font-size:1.5rem; font-weight:bold;" value="@Model.Title" />
+                        <p class="blog-details__text-1" id="vakaShortDesc">@Model.ShortDescription</p>
+                        <input type="text" id="vakaShortDescEdit" class="form-control mb-2" style="display:none;" value="@Model.ShortDescription" />
+                        
+                        <!-- Kategori Görüntüleme (normal modda) -->
+                        <p id="vakaCategoryDisplay">
+                            Kategori: <span>@Model.Categories?.FirstOrDefault(c => c.Value == Model.VakaCategoryId.ToString())?.Text</span>
+                        </p>
+                        <!-- Kategori Düzenleme (edit modunda, başta gizli) -->
+                        <select id="vakaCategoryEdit" name="VakaCategoryId" class="form-control mb-2" style="display:none;">
+                            @if (Model.Categories != null)
+                            {
+                                foreach (var cat in Model.Categories)
+                                {
+                                    var isSelected = cat.Value == Model.VakaCategoryId.ToString() ? " selected=\"selected\"" : "";
+                                    @Html.Raw($"<option value=\"{cat.Value}\"{isSelected}>{cat.Text}</option>")
+                                }
+                            }
+                        </select>
+                        <div id="vakaContentDisplay">
+                            <p class="blog-details__text-2">@Html.Raw(Model.Content)</p>
+                        </div>
+                        <form id="vakaEditForm" asp-action="Edit" method="post" enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <input type="hidden" name="Title" id="hiddenTitle" value="@Model.Title" />
+                            <input type="hidden" name="ShortDescription" id="hiddenShortDesc" value="@Model.ShortDescription" />
+                            <select id="vakaCategoryEdit" name="VakaCategoryId" class="form-control mb-2" style="display:none;">
+                                @if (Model.Categories != null)
+                                {
+                                    foreach (var cat in Model.Categories)
+                                    {
+                                        var isSelected = cat.Value == Model.VakaCategoryId.ToString() ? " selected=\"selected\"" : "";
+                                        @Html.Raw($"<option value=\"{cat.Value}\"{isSelected}>{cat.Text}</option>")
+                                    }
+                                }
+                            </select>
+                            <textarea id="vakaContentEdit" name="Content">@Html.Raw(Model.Content)</textarea>
+                            <button type="submit" class="btn btn-primary mt-3">Kaydet</button>
+                            <button type="button" class="btn btn-secondary mt-3" id="cancelEdit">İptal</button>
+                        </form>
+                        <div class="mt-4" id="editButtons">
+                            <button class="btn btn-primary" id="editBtn">Düzenle</button>
+                            <a href="@Url.Action("Index", "Vaka")" class="btn btn-secondary">Geri Dön</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!--Vaka Details End-->
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/dpe4cgc92up9sidx5u0f8eklwosou0elsw3ft7q33wajhcou/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        const editBtn = document.getElementById('editBtn');
+        const cancelEdit = document.getElementById('cancelEdit');
+        const vakaTitleH3 = document.getElementById('vakaTitleH3');
+        const vakaTitleEdit = document.getElementById('vakaTitleEdit');
+        const vakaShortDesc = document.getElementById('vakaShortDesc');
+        const vakaShortDescEdit = document.getElementById('vakaShortDescEdit');
+        const vakaContentDisplay = document.getElementById('vakaContentDisplay');
+        const vakaEditForm = document.getElementById('vakaEditForm');
+        const editButtons = document.getElementById('editButtons');
+        const hiddenTitle = document.getElementById('hiddenTitle');
+        const hiddenShortDesc = document.getElementById('hiddenShortDesc');
+        const vakaCategoryDisplay = document.getElementById('vakaCategoryDisplay');
+        const vakaCategoryEdit = document.getElementById('vakaCategoryEdit');
+
+        editBtn.addEventListener('click', function () {
+            vakaTitleH3.style.display = 'none';
+            vakaTitleEdit.style.display = 'block';
+            vakaShortDesc.style.display = 'none';
+            vakaShortDescEdit.style.display = 'block';
+            vakaContentDisplay.style.display = 'none';
+            vakaEditForm.style.display = 'block';
+            editButtons.style.display = 'none';
+            vakaCategoryDisplay.style.display = 'none';
+            vakaCategoryEdit.style.display = 'block';
+            tinymce.init({
+                selector: '#vakaContentEdit',
+                height: 400,
+                menubar: false,
+                plugins: 'link image code lists',
+                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | link image | code',
+                branding: false,
+                language: 'tr'
+            });
+        });
+
+        cancelEdit.addEventListener('click', function () {
+            vakaTitleH3.style.display = 'block';
+            vakaTitleEdit.style.display = 'none';
+            vakaShortDesc.style.display = 'block';
+            vakaShortDescEdit.style.display = 'none';
+            vakaContentDisplay.style.display = 'block';
+            vakaEditForm.style.display = 'none';
+            editButtons.style.display = 'block';
+            vakaCategoryDisplay.style.display = 'block';
+            vakaCategoryEdit.style.display = 'none';
+            if (tinymce.get('vakaContentEdit')) {
+                tinymce.get('vakaContentEdit').remove();
+            }
+        });
+
+        // Form submitte inputları güncelle
+        vakaEditForm.addEventListener('submit', function () {
+            hiddenTitle.value = vakaTitleEdit.value;
+            hiddenShortDesc.value = vakaShortDescEdit.value;
+        });
+    </script>
+} 

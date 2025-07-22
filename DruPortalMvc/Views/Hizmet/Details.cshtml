@@ -1,0 +1,111 @@
+@model DruPortalMvc.Models.HizmetViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<!-- Page Header -->
+<section class="main-slider-two">
+    <div class="main-slider__carousel owl owl-theme thm-owl__carousel"
+         data-owl-options='{"loop": false, "items": 1, "margin": 0, "dots": false, "nav": false, "animateOut": "slideOutDown", "animateIn": "fadeIn", "active": true, "smartSpeed": 1000, "autoplay": true, "autoplayTimeout": 7000, "autoplayHoverPause": false}'>
+        <div class="item main-slider-two__slide-1">
+            <div class="main-slider-two__bg" style="background-image: url(/assets/images/backgrounds/services-one-bg.jpg);"></div>
+            <div class="main-slider-two__shadow"></div>
+            <div class="container">
+                <div class="main-slider-two__content">
+                    <h2 class="main-slider-two__title" id="hizmetNameDisplay">@Model.Name</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Hizmet Details -->
+<section class="blog-details">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 col-lg-7">
+                <div class="blog-details__left">
+                    <div class="blog-details__img">
+                        @if (!string.IsNullOrEmpty(Model.PreviewImageUrl))
+                        {
+                            <img src="@Model.PreviewImageUrl" alt="@Model.Name" class="img-fluid mb-3" />
+                        }
+                        <div class="blog-details__date">
+                            <p>@DateTime.Now.ToString("dd<br>MMM")</p>
+                        </div>
+                    </div>
+                    <div class="blog-details__content">
+                        <h3 class="blog-details__title" id="hizmetTitleDisplay">@Model.Title</h3>
+                        <div id="hizmetContentDisplay">
+                            @if (!string.IsNullOrWhiteSpace(Model.Content))
+                            {
+                                <p class="blog-details__text-2">@Html.Raw(Model.Content)</p>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">Bu hizmetin henüz içeriği yok.</div>
+                            }
+                        </div>
+                        <form id="hizmetEditForm" asp-action="Edit" method="post" enctype="multipart/form-data" style="display:none;">
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <input type="hidden" name="Name" value="@Model.Name" />
+                            <input type="hidden" name="PreviewImageUrl" value="@Model.PreviewImageUrl" />
+                            <div class="mb-2">
+                                <label>Başlık</label>
+                                <input type="text" class="form-control" id="editTitle" name="Title" value="@Model.Title" />
+                            </div>
+                            <div class="mb-2">
+                                <label>İçerik</label>
+                                <textarea class="form-control" id="editContent" name="Content">@Model.Content</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">Kaydet</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="cancelEdit">İptal</button>
+                        </form>
+                        <div class="mt-4" id="editButtons">
+                            <button class="btn btn-primary" id="editBtn">Düzenle</button>
+                            <a href="@Url.Action("Index", "Hizmet")" class="btn btn-secondary">Geri Dön</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.tiny.cloud/1/dpe4cgc92up9sidx5u0f8eklwosou0elsw3ft7q33wajhcou/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        const editBtn = document.getElementById('editBtn');
+        const cancelEdit = document.getElementById('cancelEdit');
+        const hizmetTitleDisplay = document.getElementById('hizmetTitleDisplay');
+        const hizmetContentDisplay = document.getElementById('hizmetContentDisplay');
+        const hizmetEditForm = document.getElementById('hizmetEditForm');
+        const editButtons = document.getElementById('editButtons');
+
+        editBtn.addEventListener('click', function () {
+            hizmetTitleDisplay.style.display = 'none';
+            hizmetContentDisplay.style.display = 'none';
+            hizmetEditForm.style.display = 'block';
+            editButtons.style.display = 'none';
+            tinymce.init({
+                selector: '#editContent',
+                height: 400,
+                menubar: false,
+                plugins: 'link image code lists',
+                toolbar: 'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | link image | code',
+                branding: false,
+                language: 'tr'
+            });
+        });
+
+        cancelEdit.addEventListener('click', function () {
+            hizmetTitleDisplay.style.display = 'block';
+            hizmetContentDisplay.style.display = 'block';
+            hizmetEditForm.style.display = 'none';
+            editButtons.style.display = 'block';
+            if (tinymce.get('editContent')) {
+                tinymce.get('editContent').remove();
+            }
+        });
+    </script>
+}
