@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "1+Lvu5fhmjs=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Eren\\Source\\Repos\\PsychologistPortalUI\\DruPortalMvc\\DruPortalMvc.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Eren\\.nuget\\packages\\htmlagilitypack\\1.12.1\\htmlagilitypack.1.12.1.nupkg.sha512",
+    "C:\\Users\\Eren\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
